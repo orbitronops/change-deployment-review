@@ -1,0 +1,55 @@
+# Baseline: the checkout-api Deployment as it runs today (fictional sample).
+# The safe and risky changes are diffed against this file.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-api
+  namespace: prod
+  labels:
+    app: checkout-api
+    critical: "true"
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: checkout-api
+          image: registry.example.com/checkout-api:2.4.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              value: postgres://db.example.internal:5432/checkout
+            - name: REDIS_URL
+              value: redis://redis.example.internal:6379
+            - name: LOG_LEVEL
+              value: info
+          resources:
+            limits:
+              cpu: "500m"
+              memory: 512Mi
+            requests:
+              cpu: "250m"
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          securityContext:
+            privileged: false
+            readOnlyRootFilesystem: true
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: checkout-api
+  namespace: prod
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: checkout-api

@@ -1,0 +1,26 @@
+# Risky change: :latest image, no resource limits or requests, a single
+# replica, no probes, no securityContext, no PodDisruptionBudget, the
+# DATABASE_URL env var removed, and the container port changed.
+# This is the change the review is supposed to block.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-api
+  namespace: prod
+  labels:
+    app: checkout-api
+    critical: "true"
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: checkout-api
+          image: registry.example.com/checkout-api:latest
+          ports:
+            - containerPort: 9090
+          env:
+            - name: REDIS_URL
+              value: redis://redis.example.internal:6379
+            - name: LOG_LEVEL
+              value: info

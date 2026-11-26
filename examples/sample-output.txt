@@ -1,0 +1,39 @@
+Change review: checkout-api (namespace: prod)
+Verdict: BLOCK
+Findings: 15  (CRITICAL 1, HIGH 7, MEDIUM 6, LOW 1)
+Baseline: compared against the baseline manifest.
+
+Findings (most severe first):
+  [CRITICAL] Container checkout-api uses image registry.example.com/checkout-api:latest (untagged or :latest).
+    -> Pin the image to an explicit version tag or digest, e.g. checkout-api:2.4.2.
+  [HIGH] Container checkout-api has no resource limits set.
+    -> Set cpu and memory limits, e.g. cpu 500m / memory 512Mi, and validate them under load.
+  [HIGH] Critical workload checkout-api runs a single replica.
+    -> Run at least 2 replicas for a critical workload, spread across availability zones.
+  [HIGH] Replicas lowered from 3 to 1.
+    -> Confirm the lower replica count still meets the availability target, or keep the baseline replica count.
+  [HIGH] Environment variable DATABASE_URL was removed.
+    -> Confirm the app no longer needs DATABASE_URL, or restore it before deploying.
+  [HIGH] Readiness probe was removed.
+    -> Restore the readiness probe before deploying.
+  [HIGH] Liveness probe was removed.
+    -> Restore the liveness probe before deploying.
+  [HIGH] Resource limits were removed.
+    -> Restore cpu and memory limits before deploying.
+  [MEDIUM] Container checkout-api has no resource requests set.
+    -> Set cpu and memory requests so the scheduler places the pod on a node that can actually run it.
+  [MEDIUM] Container checkout-api has no readiness probe.
+    -> Add a readiness probe (e.g. HTTP GET /health) so traffic only reaches pods that are ready to serve it.
+  [MEDIUM] Container checkout-api has no liveness probe.
+    -> Add a liveness probe (e.g. HTTP GET /health) so a stuck container is restarted instead of serving errors.
+  [MEDIUM] Container checkout-api has no securityContext.
+    -> Add a securityContext: runAsNonRoot, readOnlyRootFilesystem, and drop unnecessary capabilities.
+  [MEDIUM] Critical workload checkout-api has no PodDisruptionBudget.
+    -> Add a PodDisruptionBudget (e.g. minAvailable: 1) so voluntary disruptions cannot take the workload down.
+  [MEDIUM] Container port changed from [8080] to [9090].
+    -> Confirm services, ingress, and clients use the new port, or keep the old one.
+  [LOW] Image changed from registry.example.com/checkout-api:2.4.1 to registry.example.com/checkout-api:latest.
+    -> Confirm the new image is the tested build and its tag is pinned, not :latest.
+
+Human approval: REQUIRED — nothing was deployed by this review.
+This tool only reviews. A real deployment waits for a named approver.
